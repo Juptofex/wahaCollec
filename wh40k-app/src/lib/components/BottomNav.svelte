@@ -3,7 +3,8 @@
 
   const links = [
     { href: '/', label: 'Factions' },
-    { href: '/armee', label: 'Armée' },
+    { href: '/collection', label: 'Collection' },
+    { href: '/armies', label: 'Armée' },
   ];
 </script>
 

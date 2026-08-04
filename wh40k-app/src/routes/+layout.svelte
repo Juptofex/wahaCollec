@@ -5,6 +5,8 @@
 	import { pwaInfo } from 'virtual:pwa-info';
 	import { useRegisterSW } from 'virtual:pwa-register/svelte';
 	import BottomNav from '$lib/components/BottomNav.svelte';
+	import { fade } from 'svelte/transition';
+	import { page } from '$app/stores';
 	import '../app.css';
 
 	const { updateServiceWorker } = useRegisterSW({
@@ -34,7 +36,11 @@
 
 {#if ready}
 	<main class="pb-16">
-		{@render children()}
+		{#key $page.url.pathname}
+			<div in:fade={{ duration: 150 }}>
+				{@render children()}
+			</div>
+		{/key}
 	</main>
   	<BottomNav />
 {:else}
