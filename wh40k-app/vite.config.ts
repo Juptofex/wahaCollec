@@ -1,35 +1,35 @@
-import adapter from '@sveltejs/adapter-auto';
-import { SvelteKitPWA } from '@vite-pwa/sveltekit';
-import { sveltekit } from '@sveltejs/kit/vite';
-import tailwindcss from '@tailwindcss/vite';
-import { defineConfig } from 'vite';
+import adapter from "@sveltejs/adapter-auto";
+import { SvelteKitPWA } from "@vite-pwa/sveltekit";
+import { sveltekit } from "@sveltejs/kit/vite";
+import tailwindcss from "@tailwindcss/vite";
+import { defineConfig } from "vite";
 
 export default defineConfig({
-	plugins: [
-		sveltekit({
-			compilerOptions: {
-				runes: ({ filename }) =>
-					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
-			},
-			adapter: adapter()
-		}),
-		tailwindcss(),
-		SvelteKitPWA({
-			registerType: 'autoUpdate',
-			manifest: {
-				name: 'Wahapedia Companion',
-				short_name: 'WH40K',
-				theme_color: '#1a1a1a',
-				background_color: '#000000',
-				display: 'standalone',
-				icons: [
-					{ src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-					{ src: '/icon-512.png', sizes: '512x512', type: 'image/png' }
-				]
-			},
-			workbox: {
-				globPatterns: ['**/*.{js,css,html,ico,png,svg,json}']
-			}
-		})
-	]
+  plugins: [
+    sveltekit({
+      compilerOptions: {
+        runes: ({ filename }) =>
+          filename.split(/[/\\]/).includes("node_modules") ? undefined : true,
+      },
+      adapter: adapter(),
+    }),
+    tailwindcss(),
+    SvelteKitPWA({
+      registerType: "autoUpdate",
+      manifest: {
+        name: "Wahapedia Companion",
+        short_name: "WH40K",
+        theme_color: "#1a1a1a",
+        background_color: "#000000",
+        display: "standalone",
+        icons: [
+          { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
+          { src: "/icon-512.png", sizes: "512x512", type: "image/png" },
+        ],
+      },
+      workbox: {
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,json}"],
+      },
+    }),
+  ],
 });
