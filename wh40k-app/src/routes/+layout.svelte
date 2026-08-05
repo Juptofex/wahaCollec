@@ -5,6 +5,7 @@
 	import { pwaInfo } from 'virtual:pwa-info';
 	import { useRegisterSW } from 'virtual:pwa-register/svelte';
 	import BottomNav from '$lib/components/BottomNav.svelte';
+	import OfflineBanner from '$lib/components/OfflineBanner.svelte';
 	import { fade } from 'svelte/transition';
 	import { page } from '$app/stores';
 	import '../app.css';
@@ -34,6 +35,8 @@
 	{@html webManifestLink}
 </svelte:head>
 
+<OfflineBanner />
+
 {#if ready}
 	<main class="pb-16">
 		{#key $page.url.pathname}
@@ -48,5 +51,5 @@
 {/if}
 
 <footer class="text-xs text-gray-400 text-center p-2">
-	Build: v0.0.3
+	Build: v0.1.0
 </footer>
