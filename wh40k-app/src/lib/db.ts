@@ -58,19 +58,25 @@ class WahDB extends Dexie {
 export const db = new WahDB();
 
 export async function seedIfEmpty() {
-  console.log("seedIfEmpty: start");
   const count = await db.factions.count();
-  console.log("factions count:", count);
   if (count > 0) return;
 
-  const load = (name: string) =>
-    fetch(`/data/${name}.json`).then((r) => {
-      console.log(`fetch ${name}:`, r.status);
-      return r.json();
-    });
+  try {
+    const load = (name: string) =>
+      fetch(`/data/${name}.json`).then((r) => {
+        if (!r.ok) throw new Error(`${name} failed: ${r.status}`);
+        return r.json();
+      });
 
-  const [factions, datasheets, models, abilities, wargear, keywords, options] =
-    await Promise.all([
+    const [
+      factions,
+      datasheets,
+      models,
+      abilities,
+      wargear,
+      keywords,
+      options,
+    ] = await Promise.all([
       load("Factions"),
       load("Datasheets"),
       load("Datasheets_models"),
@@ -80,43 +86,18 @@ export async function seedIfEmpty() {
       load("Datasheets_options"),
     ]);
 
-  console.log("factions loaded:", factions.length);
-  console.log("datasheets loaded:", datasheets.length);
-
-  await db.factions.bulkPut(factions);
-  console.log("factions inserted");
-  await db.datasheets.bulkPut(datasheets);
-  console.log("datasheets inserted");
-
-  try {
+    await db.factions.bulkPut(factions);
+    await db.datasheets.bulkPut(datasheets);
     await db.datasheet_models.bulkPut(models);
-  } catch (e) {
-    console.error("models failed:", e);
-  }
-
-  try {
     await db.datasheet_abilities.bulkPut(abilities);
-  } catch (e) {
-    console.error("abilities failed:", e);
-  }
-
-  try {
     await db.datasheet_wargear.bulkPut(wargear);
-  } catch (e) {
-    console.error("wargear failed:", e);
-  }
-
-  try {
     await db.datasheet_keywords.bulkPut(keywords);
-  } catch (e) {
-    console.error("keywords failed:", e);
-  }
-
-  try {
     await db.datasheet_options.bulkPut(options);
   } catch (e) {
-    console.error("options failed:", e);
+    console.error(
+      "Seed failed (probablement hors-ligne au premier lancement):",
+      e,
+    );
+    throw e;
   }
-
-  console.log("seedIfEmpty: done");
 }

@@ -21,12 +21,17 @@
 
 	let { children } = $props();
 	let ready = $state(false);
+	let seedError = $state(false);
 
 	let webManifestLink = $derived(pwaInfo ? pwaInfo.webManifest.linkTag : '');
 
 	onMount(async () => {
-		await seedIfEmpty();
-		ready = true;
+		try {
+			await seedIfEmpty();
+			ready = true;
+		} catch {
+			seedError = true;
+		}
 	});
 </script>
 
@@ -46,10 +51,14 @@
 		{/key}
 	</main>
   	<BottomNav />
+{:else if seedError}
+  <p class="p-4 text-red-600">
+    Impossible de charger les données. Connecte-toi à internet une première fois pour synchroniser l'app.
+  </p>
 {:else}
-	<p class="p-4">Chargement des données...</p>
+  <p class="p-4">Chargement des données...</p>
 {/if}
 
 <footer class="text-xs text-gray-400 text-center p-2">
-	Build: v0.1.0
+	Build: v0.1.1
 </footer>
