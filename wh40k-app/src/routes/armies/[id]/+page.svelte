@@ -375,7 +375,11 @@
                   <p class="text-xs uppercase tracking-wide text-gray-400">
                     {factions.find((item) => item.id === detachment.faction_id)?.name}
                   </p>
-                  <h3 class="text-lg font-semibold">{detachment.name}</h3>
+                  <a
+                    href={`/factions/${factions.find((item) => item.id === detachment.faction_id)?.id}/detachments/${detachment.detachment_id}`}
+                  >
+                    <p class="text-lg font-semibold">{detachment.name}</p>
+                  </a>
                   <p>
                     {getDetachmentPoints(detachment.id)} pts
                   </p>
