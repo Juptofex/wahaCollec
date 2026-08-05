@@ -3,21 +3,12 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import { seedIfEmpty } from '$lib/db';
 	import { pwaInfo } from 'virtual:pwa-info';
-	import { useRegisterSW } from 'virtual:pwa-register/svelte';
 	import BottomNav from '$lib/components/BottomNav.svelte';
 	import OfflineBanner from '$lib/components/OfflineBanner.svelte';
 	import { fade } from 'svelte/transition';
 	import { page } from '$app/stores';
 	import '../app.css';
 
-	const { updateServiceWorker } = useRegisterSW({
-		onRegisteredSW(swUrl, registration) {
-			console.log('Service worker enregistré:', swUrl);
-		},
-		onRegisterError(error) {
-			console.error('Erreur d\'enregistrement SW:', error);
-		}
-	});
 
 	let { children } = $props();
 	let ready = $state(false);
