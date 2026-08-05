@@ -6,13 +6,7 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   plugins: [
-    sveltekit({
-      compilerOptions: {
-        runes: ({ filename }) =>
-          filename.split(/[/\\]/).includes("node_modules") ? undefined : true,
-      },
-      adapter: adapter(),
-    }),
+    sveltekit(),
     tailwindcss(),
     SvelteKitPWA({
       registerType: "autoUpdate",

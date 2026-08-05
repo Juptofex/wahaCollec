@@ -60,5 +60,5 @@
 {/if}
 
 <footer class="text-xs text-gray-400 text-center p-2">
-	Build: v0.1.1
+	Build: v0.1.2
 </footer>
