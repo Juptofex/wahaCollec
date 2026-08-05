@@ -5,12 +5,20 @@
   type Army = {
     id: string;
     name: string;
+    faction_id?: string;
     points_limit?: number;
     created_at: number;
     updated_at: number;
   };
 
+  type Faction = {
+    id: string;
+    name: string;
+    link: string;
+  };
+
   let armies = $state<Army[]>([]);
+  let factions = $state<Faction[]>([]);
   let loading = $state(true);
   let saving = $state(false);
   let error = $state('');
@@ -19,7 +27,13 @@
   let pointsLimit = $state('');
 
   async function loadArmies() {
-    armies = await db.armies.orderBy('created_at').reverse().toArray();
+    const [armyRows, factionRows] = await Promise.all([
+      db.armies.orderBy('created_at').reverse().toArray(),
+      db.factions.toArray()
+    ]);
+
+    armies = armyRows;
+    factions = factionRows;
   }
 
   async function createArmy() {
@@ -133,12 +147,15 @@
         {#each armies as army}
           <article class="rounded-lg border bg-white p-4 shadow-sm">
             <div class="flex items-start justify-between gap-3">
-              <div>
-                <h3 class="font-semibold">{army.name}</h3>
+              <a href={`/armies/${army.id}`} class="block flex-1 rounded-md hover:bg-slate-50">
+                <h3 class="font-semibold text-slate-900">{army.name}</h3>
+                <p class="text-xs uppercase tracking-wide text-slate-400">
+                  {factions.find((faction) => faction.id === army.faction_id)?.name ?? 'No faction selected'}
+                </p>
                 <p class="text-sm text-gray-500">
                   {army.points_limit ? `${army.points_limit} pts` : 'Pas de limite de points'}
                 </p>
-              </div>
+              </a>
 
               <button
                 type="button"

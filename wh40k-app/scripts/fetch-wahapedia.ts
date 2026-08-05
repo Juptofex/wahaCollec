@@ -15,6 +15,7 @@ const FILES = [
   "Enhancements",
   "Detachments",
   "Detachment_abilities",
+  "Datasheets_models_cost",
 ];
 
 async function main() {

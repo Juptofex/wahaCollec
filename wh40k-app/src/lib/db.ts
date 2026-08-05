@@ -35,6 +35,7 @@ interface DatasheetOption {
 interface ArmyDetachment {
   id: string;
   army_id: string;
+  detachment_id?: string;
   name: string;
   faction_id: string;
 }
@@ -51,6 +52,7 @@ interface ArmyUnit {
 interface Army {
   id: string;
   name: string;
+  faction_id?: string;
   points_limit?: number;
   created_at: number;
   updated_at: number;
@@ -70,7 +72,7 @@ class WahDB extends Dexie {
 
   constructor() {
     super("wahapedia");
-    this.version(2).stores({
+    this.version(3).stores({
       factions: "id, name",
       datasheets: "id, faction_id, name",
       datasheet_models: "++localId, datasheet_id",
@@ -78,8 +80,8 @@ class WahDB extends Dexie {
       datasheet_wargear: "++localId, datasheet_id",
       datasheet_keywords: "++localId, datasheet_id",
       datasheet_options: "++localId, datasheet_id",
-      armies: "id, name, points_limit, created_at, updated_at",
-      army_detachments: "id, army_id, name, faction_id",
+      armies: "id, name, faction_id, points_limit, created_at, updated_at",
+      army_detachments: "id, army_id, detachment_id, name, faction_id",
       army_units: "id, army_id, datasheet_id, detachment_id, quantity, points",
     });
   }
