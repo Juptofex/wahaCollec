@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { db } from '$lib/db';
+  import { getDetachments, getModelCosts } from '$lib/gameData';
 
   type Army = {
     id: string;
@@ -75,22 +76,28 @@
 
   let selectedFactionId = $state('');
   let selectedDetachmentId = $state('');
+  let selectedDatasheetId = $state('');
+  let selectedQuantity = $state(1);
 
   async function loadPageData() {
-    const [armyRecord, factionList, detachmentList, armyDetachmentRows, armyUnitRows, datasheetList, costList] =
+    const [armyRecord, factionList, detachmentList, armyDetachmentRows, armyUnitRows, costList] =
       await Promise.all([
         db.armies.get(data.armyId),
         db.factions.toArray(),
-        fetch('/data/Detachments.json').then((response) => response.json() as Promise<DetachmentCatalog[]>),
+        getDetachments(),
         db.army_detachments.where('army_id').equals(data.armyId).toArray(),
         db.army_units.where('army_id').equals(data.armyId).toArray(),
-        db.datasheets.toArray(),
-        fetch('/data/Datasheets_models_cost.json').then((response) => response.json() as Promise<DatasheetModelCost[]>)
+        getModelCosts()
       ]);
 
     if (!armyRecord) {
       throw new Error('Army not found');
     }
+
+    const factionIds = [...new Set(armyDetachmentRows.map((d) => d.faction_id))];
+    const datasheetList = factionIds.length
+      ? await db.datasheets.where('faction_id').anyOf(factionIds).toArray()
+      : [];
 
     army = armyRecord;
     factions = factionList;
@@ -146,24 +153,24 @@
     error = '';
 
     try {
-        const updatedArmy: Army = {
+      const updatedArmy: Army = {
         id: army.id,
         name: army.name,
         faction_id: factionId,
         points_limit: army.points_limit,
         created_at: army.created_at,
         updated_at: Date.now()
-        };
+      };
 
-        army = updatedArmy;
-        await db.armies.put(updatedArmy);
+      army = updatedArmy;
+      await db.armies.put(updatedArmy);
     } catch (e) {
-        console.error(e);
-        error = 'Impossible de sauvegarder la faction de l’armée.';
+      console.error(e);
+      error = 'Impossible de sauvegarder la faction de l’armée.';
     } finally {
-        savingArmy = false;
+      savingArmy = false;
     }
-    }
+  }
 
   async function addDetachment() {
     error = '';
@@ -186,7 +193,14 @@
       };
 
       await db.army_detachments.add(detachment);
-      await loadPageData();
+
+      const factionAlreadyLoaded = datasheets.some((sheet) => sheet.faction_id === selectedFactionId);
+      if (!factionAlreadyLoaded) {
+        const newDatasheets = await db.datasheets.where('faction_id').equals(selectedFactionId).toArray();
+        datasheets = [...datasheets, ...newDatasheets];
+      }
+
+      armyDetachments = [...armyDetachments, { ...detachment, units: [] }];
     } catch (e) {
       console.error(e);
       error = 'Impossible d’ajouter le détachement.';
@@ -216,17 +230,22 @@
     }
 
     try {
-      await db.army_units.add({
+      const newUnit: ArmyUnit = {
         id: crypto.randomUUID(),
         army_id: data.armyId,
         detachment_id: detachment.id,
         datasheet_id: datasheetId,
         quantity,
         points
-      });
+      };
+
+      await db.army_units.add(newUnit);
+
+      armyDetachments = armyDetachments.map((d) =>
+        d.id === detachment.id ? { ...d, units: [...d.units, newUnit] } : d
+      );
 
       form.reset();
-      await loadPageData();
     } catch (e) {
       console.error(e);
       error = 'Impossible d’ajouter l’unité.';
@@ -236,7 +255,11 @@
   async function deleteUnit(unitId: string) {
     try {
       await db.army_units.delete(unitId);
-      await loadPageData();
+
+      armyDetachments = armyDetachments.map((d) => ({
+        ...d,
+        units: d.units.filter((unit) => unit.id !== unitId)
+      }));
     } catch (e) {
       console.error(e);
       error = 'Impossible de supprimer l’unité.';
@@ -251,11 +274,24 @@
       const units = await db.army_units.where('detachment_id').equals(detachment.id).toArray();
       await db.army_units.bulkDelete(units.map((unit) => unit.id));
       await db.army_detachments.delete(detachment.id);
-      await loadPageData();
+
+      // maj locale au lieu de loadPageData()
+      armyDetachments = armyDetachments.filter((d) => d.id !== detachment.id);
     } catch (e) {
       console.error(e);
       error = 'Impossible de supprimer le détachement.';
     }
+  }
+
+  function getQuantityOptions(datasheetId: string) {
+    return modelCosts
+      .filter((item) => item.datasheet_id === datasheetId)
+      .map((item) => ({
+        quantity: parseModelCount(item.description),
+        cost: Number(item.cost)
+      }))
+      .filter((item) => item.quantity > 0)
+      .sort((a, b) => a.quantity - b.quantity);
   }
 
   $effect(() => {
@@ -397,7 +433,7 @@
               <form class="grid gap-3 md:grid-cols-[2fr_80px_auto]" onsubmit={(event) => addUnit(detachment, event)}>
                 <label class="block">
                   <span class="block text-sm font-medium mb-1">Unit</span>
-                  <select name="datasheet_id" class="w-full rounded border px-3 py-2">
+                  <select name="datasheet_id" bind:value={selectedDatasheetId}>
                     <option value="">Choose a unit</option>
                     {#each datasheets.filter((sheet) => sheet.faction_id === detachment.faction_id) as sheet}
                       <option value={sheet.id}>{sheet.name}</option>
@@ -407,7 +443,11 @@
 
                 <label class="block">
                   <span class="block text-sm font-medium mb-1">Qty</span>
-                  <input name="quantity" type="number" min="1" value="1" class="w-full rounded border px-3 py-2" />
+                  <select name="quantity" bind:value={selectedQuantity} disabled={!selectedDatasheetId}>
+                    {#each getQuantityOptions(selectedDatasheetId) as option}
+                      <option value={option.quantity}>{option.quantity}</option>
+                    {/each}
+                  </select>
                 </label>
 
                 <button
@@ -426,9 +466,9 @@
                     {#each detachment.units as unit}
                       <article class="rounded-xl border bg-slate-50 p-3 flex items-start justify-between gap-3">
                         <div>
-                          <p class="font-medium">
+                          <a class="font-medium" href={`/datasheets/${unit.datasheet_id}`}>
                             {datasheets.find((sheet) => sheet.id === unit.datasheet_id)?.name ?? unit.datasheet_id}
-                          </p>
+                          </a>
                           <p class="text-xs text-gray-500">
                             Qty: {unit.quantity} · {unit.points} pts
                           </p>
