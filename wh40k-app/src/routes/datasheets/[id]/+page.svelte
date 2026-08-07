@@ -1,6 +1,99 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+  import { page } from '$app/stores';
+  import { db } from '$lib/db';
   import type { PageData } from './$types';
+
   let { data }: { data: PageData } = $props();
+
+  let swappableWeaponNames = $state<Set<string>>(new Set());
+  let loadoutNames = $state<Set<string>>(new Set());
+
+  function stripHtml(description: string) {
+    return description.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+
+  $effect(() => {
+    const raw = $page.url.searchParams.get('loadout');
+    if (!raw) {
+      loadoutNames = new Set();
+      return;
+    }
+    try {
+      const parsed: string[] = JSON.parse(raw);
+      loadoutNames = new Set(parsed.map((n) => n.toLowerCase().trim()));
+    } catch {
+      loadoutNames = new Set();
+    }
+  });
+
+
+  $effect(() => {
+    const datasheetId = data.datasheet.id;
+    db.datasheet_options
+      .where('datasheet_id')
+      .equals(datasheetId)
+      .toArray()
+      .then((options) => {
+        const names = new Set<string>();
+        for (const row of options) {
+          if (row.button === '*') continue;
+          const text = stripHtml(row.description);
+          if (text.toLowerCase() === 'none') continue;
+
+          Array.from(row.description.matchAll(/<li>(.*?)<\/li>/g)).forEach((m) => {
+            names.add(stripHtml(m[1]).replace(/\*+\s*$/, '').trim().toLowerCase());
+          });
+
+          const match =
+            text.match(/replaced with\s+(.+?)\.?\s*$/i) ??
+            text.match(/equipped with\s+(.+?)\.?\s*$/i);
+          if (match) {
+            const label = match[1]
+              .replace(/\s*\([^)]*\)\s*$/, '')
+              .replace(/\*+\s*$/, '')
+              .replace(/^1\s+/, '')
+              .trim()
+              .toLowerCase();
+            if (label) names.add(label);
+          }
+
+          // NEW: also register the base weapon being replaced, so it can be hidden
+          const replaceIdx = text.search(/\breplaced with\b/i);
+          if (replaceIdx >= 0) {
+            let subject = text
+              .slice(0, replaceIdx)
+              .replace(/^for every \d+ models? in this unit,?\s*/i, '')
+              .replace(/^if this unit contains \d+ models?,?\s*/i, '');
+
+            const baseMatch =
+              subject.match(/have (?:their|its)\s+(.+?)\s*$/i) ??
+              subject.match(/(?:’s|'s)\s+(.+?)\s*$/i);
+
+            if (baseMatch) {
+              const baseLabel = baseMatch[1]
+                .replace(/\s*\bcan (each )?be\s*$/i, '')
+                .trim()
+                .toLowerCase();
+              if (baseLabel) names.add(baseLabel);
+            }
+          }
+        }
+        swappableWeaponNames = names;
+    });
+  });
+
+  function isVisible(weaponName: string) {
+    if (loadoutNames.size === 0) return true; // no loadout passed → show full profile
+
+    const name = weaponName.toLowerCase().trim();
+
+    // Not a swappable weapon at all → it's a fixed/base weapon, always shown
+    if (!swappableWeaponNames.has(name)) return true;
+
+    // Swappable weapon → only show if it's the currently equipped choice
+    return loadoutNames.has(name);
+  }
 </script>
 
 <div class="p-4 max-w-3xl mx-auto">
@@ -66,7 +159,7 @@
         </tr>
       </thead>
       <tbody>
-        {#each data.wargear as w}
+        {#each data.wargear.filter((w) => isVisible(w.name)) as w}
           <tr class="border-b">
             <td class="p-2">
               {w.name}
@@ -85,6 +178,15 @@
       </tbody>
     </table>
   </div>
+
+  {#if loadoutNames.size > 0}
+    <p class="mt-2 text-xs text-gray-500">
+      Showing this unit's equipped loadout.
+      <a class="text-blue-600 underline" href={`/datasheets/${data.datasheet.id}`}>
+        View full weapon profile
+      </a>
+    </p>
+  {/if}
 
   <!-- MOTS-CLÉS -->
   <h2 class="text-lg font-semibold mt-6 mb-2">Mots-clés</h2>
