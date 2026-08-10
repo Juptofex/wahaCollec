@@ -80,6 +80,11 @@
                 {@html enhancement.legend}
               </div>
             {/if}
+            {#if enhancement.description}
+              <div>
+                {@html enhancement.description}
+              </div>
+            {/if}
             {#if enhancement.cost}
               <p class="text-xs text-slate-500">Cost: {enhancement.cost}</p>
             {/if}
