@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { PageData } from './$types';
+  import StratagemList from './components/StratagemList.svelte';
   let { data }: { data: PageData } = $props();
 </script>
 
@@ -38,7 +39,6 @@
                 <p class="text-xs text-blue-700 mt-1">{@html ability.legend}</p>
               {/if}
             </div>
-
             {#if ability.description}
               <div class="text-sm text-slate-700">
                 {@html ability.description}
@@ -52,97 +52,22 @@
 
   <section class="rounded-2xl border bg-white p-4 shadow-sm space-y-3">
     <h2 class="text-lg font-semibold">General stratagems</h2>
-
-    {#if data.generalStratagems.length === 0}
-        <p class="text-sm text-gray-500">No general stratagems found for this faction.</p>
-    {:else}
-        <div class="grid gap-3">
-        {#each data.generalStratagems as stratagem}
-            <article class="rounded-xl border p-4 space-y-2">
-            <div class="flex items-start justify-between gap-3">
-                <div>
-                <h3 class="font-semibold">{stratagem.name}</h3>
-                {#if stratagem.type}
-                    <p class="text-xs text-slate-500">{stratagem.type}</p>
-                {/if}
-                </div>
-
-                {#if stratagem.cp_cost}
-                <span class="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">
-                    {stratagem.cp_cost} CP
-                </span>
-                {/if}
-            </div>
-
-            {#if stratagem.turn || stratagem.phase}
-                <div class="flex flex-wrap gap-2 text-xs text-slate-500">
-                {#if stratagem.turn}<span>{stratagem.turn}</span>{/if}
-                {#if stratagem.phase}<span>{stratagem.phase}</span>{/if}
-                </div>
-            {/if}
-
-            {#if stratagem.legend}
-                <p class="text-sm text-slate-600">{stratagem.legend}</p>
-            {/if}
-
-            {#if stratagem.description}
-                <div class="text-sm text-slate-700">
-                {@html stratagem.description}
-                </div>
-            {/if}
-            </article>
-        {/each}
-        </div>
-    {/if}
-    </section>
+    <StratagemList
+      stratagems={data.generalStratagems}
+      emptyMessage="No general stratagems found for this faction."
+    />
+  </section>
 
   <section class="rounded-2xl border bg-white p-4 shadow-sm space-y-3">
     <h2 class="text-lg font-semibold">Stratagems</h2>
-
-    {#if data.stratagems.length === 0}
-        <p class="text-sm text-gray-500">No stratagems found for this detachment.</p>
-    {:else}
-        <div class="grid gap-3">
-        {#each data.stratagems as stratagem}
-            <article class="rounded-xl border p-4 space-y-2">
-            <div class="flex items-start justify-between gap-3">
-                <div>
-                <h3 class="font-semibold">{stratagem.name}</h3>
-                {#if stratagem.type}
-                    <p class="text-xs text-slate-500">{stratagem.type}</p>
-                {/if}
-                </div>
-
-                {#if stratagem.cp_cost}
-                <span class="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">
-                    {stratagem.cp_cost} CP
-                </span>
-                {/if}
-            </div>
-
-            <div class="flex flex-wrap gap-2 text-xs text-slate-500">
-                {#if stratagem.turn}<span>{stratagem.turn}</span>{/if}
-                {#if stratagem.phase}<span>{stratagem.phase}</span>{/if}
-            </div>
-
-            {#if stratagem.legend}
-                <p class="text-sm text-slate-600">{stratagem.legend}</p>
-            {/if}
-
-            {#if stratagem.description}
-                <div class="text-sm text-slate-700">
-                {@html stratagem.description}
-                </div>
-            {/if}
-            </article>
-        {/each}
-        </div>
-    {/if}
-    </section>
+    <StratagemList
+      stratagems={data.stratagems}
+      emptyMessage="No stratagems found for this detachment."
+    />
+  </section>
 
   <section class="rounded-2xl border bg-white p-4 shadow-sm space-y-3">
     <h2 class="text-lg font-semibold">Enhancements</h2>
-
     {#if data.enhancements.length === 0}
       <p class="text-sm text-gray-500">No enhancements found for this detachment.</p>
     {:else}
