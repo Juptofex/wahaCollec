@@ -1,16 +1,13 @@
 import Dexie, { type Table } from "dexie";
+import type {
+  Army,
+  Faction,
+  ArmyDetachment,
+  ArmyUnit,
+  Datasheet,
+  DatasheetOption,
+} from "./types";
 
-interface Faction {
-  id: string;
-  name: string;
-  link: string;
-}
-interface Datasheet {
-  id: string;
-  faction_id: string;
-  name: string;
-  [key: string]: any;
-}
 interface DatasheetModel {
   datasheet_id: string;
   [key: string]: any;
@@ -26,36 +23,6 @@ interface DatasheetWargear {
 interface DatasheetKeyword {
   datasheet_id: string;
   [key: string]: any;
-}
-interface DatasheetOption {
-  datasheet_id: string;
-  [key: string]: any;
-}
-
-interface ArmyDetachment {
-  id: string;
-  army_id: string;
-  detachment_id?: string;
-  name: string;
-  faction_id: string;
-}
-
-interface ArmyUnit {
-  id: string;
-  army_id: string;
-  detachment_id: string;
-  datasheet_id: string;
-  quantity: number;
-  points: number;
-}
-
-interface Army {
-  id: string;
-  name: string;
-  faction_id?: string;
-  points_limit?: number;
-  created_at: number;
-  updated_at: number;
 }
 
 class WahDB extends Dexie {
