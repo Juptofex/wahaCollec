@@ -9,8 +9,11 @@
 
 <ul class="grid grid-cols-2 gap-2 p-4">
   {#each $factions ?? [] as faction}
-    <li class="border rounded p-3 hover:bg-gray-100">
-      <a href={`/factions/${faction.id}`}>{faction.name}</a>
-    </li>
+    <a 
+    class="border rounded p-3 hover:bg-gray-100"
+    href={`/factions/${faction.id}`}
+    >
+    {faction.name}
+  </a>
   {/each}
 </ul>

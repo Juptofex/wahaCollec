@@ -6,9 +6,12 @@ import type {
   ArmyUnit,
   Datasheet,
   DatasheetOption,
+  DatasheetModelCost,
   Collection,
   CollectionUnit,
   FactionCollection,
+  Detachment,
+  DetachmentAbility,
 } from "./types";
 
 interface DatasheetModel {
@@ -28,13 +31,10 @@ interface DatasheetKeyword {
   [key: string]: any;
 }
 
-interface DatasheetModelCost {
-  datasheet_id: string;
-  [key: string]: any;
-}
-
 class WahDB extends Dexie {
   factions!: Table<Faction>;
+  detachments!: Table<Detachment>;
+  detachment_abilities!: Table<DetachmentAbility>;
   datasheets!: Table<Datasheet>;
   datasheet_models!: Table<DatasheetModel>;
   datasheet_abilities!: Table<DatasheetAbility>;
@@ -51,8 +51,10 @@ class WahDB extends Dexie {
 
   constructor() {
     super("wahapedia");
-    this.version(3).stores({
+    this.version(4).stores({
       factions: "id, name",
+      detachments: "id, faction_id, name",
+      detachment_abilities: "id, faction_id, detachment_id",
       datasheets: "id, faction_id, name",
       datasheet_models: "++localId, datasheet_id",
       datasheet_abilities: "++localId, datasheet_id",
@@ -73,8 +75,11 @@ class WahDB extends Dexie {
 export const db = new WahDB();
 
 export async function seedIfEmpty() {
-  const count = await db.factions.count();
-  if (count > 0) return;
+  const [factionCount, detachmentCount] = await Promise.all([
+    db.factions.count(),
+    db.detachments.count(),
+  ]);
+  if (factionCount > 0 && detachmentCount > 0) return;
 
   try {
     const load = (name: string) =>
@@ -85,6 +90,8 @@ export async function seedIfEmpty() {
 
     const [
       factions,
+      detachments,
+      detachmentAbilities,
       datasheets,
       models,
       abilities,
@@ -94,6 +101,8 @@ export async function seedIfEmpty() {
       models_cost,
     ] = await Promise.all([
       load("Factions"),
+      load("Detachments"),
+      load("Detachment_abilities"),
       load("Datasheets"),
       load("Datasheets_models"),
       load("Datasheets_abilities"),
@@ -104,6 +113,8 @@ export async function seedIfEmpty() {
     ]);
 
     await db.factions.bulkPut(factions);
+    await db.detachments.bulkPut(detachments);
+    await db.detachment_abilities.bulkPut(detachmentAbilities);
     await db.datasheets.bulkPut(datasheets);
     await db.datasheet_models.bulkPut(models);
     await db.datasheet_abilities.bulkPut(abilities);

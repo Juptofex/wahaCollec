@@ -92,3 +92,23 @@ export type CollectionUnit = {
   datasheet_id: string;
   quantity: number;
 };
+
+export type Detachment = {
+  id: string;
+  faction_id: string;
+  name: string;
+  type: string;
+  legend: string;
+  dp: number;
+  force_disposition: string;
+};
+
+export type DetachmentAbility = {
+  id: string;
+  faction_id: string;
+  name: string;
+  description: string;
+  legend: string;
+  detachment: string;
+  detachment_id: string;
+};
