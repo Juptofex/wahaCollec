@@ -3,6 +3,7 @@
   import { page } from '$app/stores';
   import { db } from '$lib/db';
   import type { PageData } from './$types';
+  import AddToCollection from './components/AddToCollection.svelte';
 
   let { data }: { data: PageData } = $props();
 
@@ -97,7 +98,10 @@
 </script>
 
 <div class="p-4 max-w-3xl mx-auto">
-  <h1 class="text-2xl font-bold">{data.datasheet.name}</h1>
+  <div>
+    <h1 class="text-2xl font-bold">{data.datasheet.name}</h1>
+    <AddToCollection {data}/>
+  </div>
 
   <!-- PROFILS -->
   <h2 class="text-lg font-semibold mt-6 mb-2">Profils</h2>

@@ -76,3 +76,19 @@ export type OptionGroup = {
   choices: string[];
   defaultLabel: string;
 };
+
+export type Collection = {
+  armies: FactionCollection[];
+};
+
+export type FactionCollection = {
+  id: string;
+  faction_id: string;
+};
+
+export type CollectionUnit = {
+  id: string;
+  factionCollection_id: string;
+  datasheet_id: string;
+  quantity: number;
+};

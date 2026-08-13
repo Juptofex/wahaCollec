@@ -6,6 +6,9 @@ import type {
   ArmyUnit,
   Datasheet,
   DatasheetOption,
+  Collection,
+  CollectionUnit,
+  FactionCollection,
 } from "./types";
 
 interface DatasheetModel {
@@ -25,6 +28,11 @@ interface DatasheetKeyword {
   [key: string]: any;
 }
 
+interface DatasheetModelCost {
+  datasheet_id: string;
+  [key: string]: any;
+}
+
 class WahDB extends Dexie {
   factions!: Table<Faction>;
   datasheets!: Table<Datasheet>;
@@ -33,9 +41,13 @@ class WahDB extends Dexie {
   datasheet_wargear!: Table<DatasheetWargear>;
   datasheet_keywords!: Table<DatasheetKeyword>;
   datasheet_options!: Table<DatasheetOption>;
+  datasheet_models_cost!: Table<DatasheetModelCost>;
   armies!: Table<Army>;
   army_detachments!: Table<ArmyDetachment>;
   army_units!: Table<ArmyUnit>;
+  collection!: Table<Collection>;
+  collection_units!: Table<CollectionUnit>;
+  faction_collections!: Table<FactionCollection>;
 
   constructor() {
     super("wahapedia");
@@ -47,9 +59,13 @@ class WahDB extends Dexie {
       datasheet_wargear: "++localId, datasheet_id",
       datasheet_keywords: "++localId, datasheet_id",
       datasheet_options: "++localId, datasheet_id",
+      datasheet_models_cost: "++localId, datasheet_id",
       armies: "id, name, faction_id, points_limit, created_at, updated_at",
       army_detachments: "id, army_id, detachment_id, name, faction_id",
       army_units: "id, army_id, datasheet_id, detachment_id, quantity, points",
+      collection: "armies",
+      collection_units: "id, factionCollection_id, datasheet_id, quantity",
+      faction_collections: "id, faction_id",
     });
   }
 }
@@ -75,6 +91,7 @@ export async function seedIfEmpty() {
       wargear,
       keywords,
       options,
+      models_cost,
     ] = await Promise.all([
       load("Factions"),
       load("Datasheets"),
@@ -83,6 +100,7 @@ export async function seedIfEmpty() {
       load("Datasheets_wargear"),
       load("Datasheets_keywords"),
       load("Datasheets_options"),
+      load("Datasheets_models_cost"),
     ]);
 
     await db.factions.bulkPut(factions);
@@ -92,6 +110,7 @@ export async function seedIfEmpty() {
     await db.datasheet_wargear.bulkPut(wargear);
     await db.datasheet_keywords.bulkPut(keywords);
     await db.datasheet_options.bulkPut(options);
+    await db.datasheet_models_cost.bulkPut(models_cost);
   } catch (e) {
     console.error(
       "Seed failed (probablement hors-ligne au premier lancement):",
