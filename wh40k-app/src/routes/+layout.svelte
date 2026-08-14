@@ -5,6 +5,7 @@
 	import { pwaInfo } from 'virtual:pwa-info';
 	import BottomNav from '$lib/components/BottomNav.svelte';
 	import OfflineBanner from '$lib/components/OfflineBanner.svelte';
+	import ToastStack from '$lib/components/ToastStack.svelte';
 	import { fade } from 'svelte/transition';
 	import { page } from '$app/stores';
 	import '../app.css';
@@ -50,6 +51,8 @@
   <p class="p-4">Chargement des données...</p>
 {/if}
 
+<ToastStack />
+
 <footer class="text-xs text-gray-400 text-center p-2">
-	Build: v0.2.6
+	Build: v0.3.1
 </footer>
