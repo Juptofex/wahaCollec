@@ -3,23 +3,23 @@
 export const CORE_WEAPON_ABILITIES: Record<string, string> = {
   ANTI: "Scores a Critical Wound against the specified keyword on an unmodified Wound roll at or above the stated value.",
   ASSAULT:
-    "Can be fired even if the bearer's unit made a Normal, Advance, or Fall Back move this turn.",
+    "Can be fired even if the bearer's unit made an Advance move this turn.",
   BLAST:
-    "Gains extra Attacks against larger target units, scaling with the number of models in the target.",
+    "Gains extra Attacks against larger target units, scaling with the number of models in the target (+1 per 5 models).",
   "DEVASTATING WOUNDS":
-    "A Critical Wound scored with this weapon becomes a Devastating Wound: no saving throw of any kind can be made against it.",
+    "A Critical Wound scored with this weapon becomes a Devastating Wound: damage become a mortal wound, no saving throw of any kind can be made against it.",
   "EXTRA ATTACKS":
-    "Cannot be a model's only weapon; attacks made with it resolve after the model's other attacks.",
+    "The model can make additional attacks with this weapon, as specified by the stated value.",
   HAZARDOUS:
-    "After the bearer's unit fights or shoots, roll for each model that used this weapon; on a 1, that model is destroyed.",
+    "After the bearer's unit fights or shoots, roll for each model that used this weapon; on a 1-2, that unit suffers a mortal wound (3 for vehicles or monsters).",
   HEAVY:
-    "Add 1 to the Hit roll if the bearer's unit Remained Stationary this turn.",
+    "Add 1 to the Hit roll if the bearer's unit Remained Stationary this turn (or moved less than 3\").",
   "IGNORES COVER":
     "The target does not receive the Benefit of Cover against attacks made with this weapon.",
   "INDIRECT FIRE":
-    "Can target units the bearer cannot see, at a penalty to the Hit roll and granting the target Benefit of Cover.",
+    "Can target units the bearer cannot see, the target receives the Benefit of Cover. You cannot re-roll Hit rolls and an unmodified Hit roll of 1-5 automatically misses unless your unit remained stationnary this turn and the target is visible to one or more friendly units, in wich case an unmodified Hit roll of 1-3 automatically misses.",
   LANCE:
-    "Add 1 to the Hit roll if the bearer's unit made a Charge move this turn.",
+    "Add 1 to the Wound roll if the bearer's unit made a Charge move this turn.",
   "LETHAL HITS":
     "An unmodified Hit roll of 6 automatically scores a successful wound, skipping the Wound roll.",
   MELTA:
