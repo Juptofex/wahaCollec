@@ -9,6 +9,15 @@
   let swappableWeaponNames = $state<Set<string>>(new Set());
   let loadoutNames = $state<Set<string>>(new Set());
   let openAbilities = $state<Set<string>>(new Set());
+  let coreAbilities = $derived.by(() =>
+    data.abilities.filter((a) => a.name && a.type === "Core")
+  );
+  let factionAbilities = $derived.by(() =>
+    data.abilities.filter((a) => a.name && a.type === "Faction")
+  );
+  let datasheetAbilities = $derived.by(() =>
+    data.abilities.filter((a) => a.name && a.type !== "Core" && a.type !== "Faction")
+  );
 
   function stripHtml(description: string) {
     return description.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -146,26 +155,44 @@
 
   <!-- CAPACITÉS -->
   <h2 class="text-lg font-semibold mt-6 mb-2">Capacités</h2>
-  <div class="space-y-2">
-    {#each data.abilities.filter(a => a.name) as a}
-      <div class="border rounded">
-        <button
-          type="button"
-          class="w-full flex items-center justify-between p-2 text-left"
-          onclick={() => toggleAbility(a.name)}
-          aria-expanded={openAbilities.has(a.name)}
-        >
-          <strong>{a.name} {a.parameter}</strong>
-          <span class="text-gray-500 transition-transform {openAbilities.has(a.name) ? 'rotate-180' : ''}">
-            ▾
-          </span>
-        </button>
-        {#if openAbilities.has(a.name)}
-          <p class="text-sm text-gray-700 px-2 pb-2">{@html a.description}</p>
-        {/if}
-      </div>
-    {/each}
-  </div>
+
+  {#snippet abilityList(list: typeof data.abilities)}
+    <div class="space-y-2">
+      {#each list as a}
+        <div class="border rounded">
+          <button
+            type="button"
+            class="w-full flex items-center justify-between p-2 text-left"
+            onclick={() => toggleAbility(a.name)}
+            aria-expanded={openAbilities.has(a.name)}
+          >
+            <strong>{a.name} {a.parameter}</strong>
+            <span class="text-gray-500 transition-transform {openAbilities.has(a.name) ? 'rotate-180' : ''}">
+              ▾
+            </span>
+          </button>
+          {#if openAbilities.has(a.name)}
+            <p class="text-sm text-gray-700 px-2 pb-2">{@html a.description}</p>
+          {/if}
+        </div>
+      {/each}
+    </div>
+  {/snippet}
+
+  {#if datasheetAbilities.length > 0}
+    <h3 class="text-sm font-semibold text-gray-600 mt-4 mb-1">Capacités de la fiche</h3>
+    {@render abilityList(datasheetAbilities)}
+  {/if}
+
+  {#if factionAbilities.length > 0}
+    <h3 class="text-sm font-semibold text-gray-600 mt-4 mb-1">Capacités de faction</h3>
+    {@render abilityList(factionAbilities)}
+  {/if}
+
+  {#if coreAbilities.length > 0}
+    <h3 class="text-sm font-semibold text-gray-600 mt-4 mb-1">Capacités générales</h3>
+    {@render abilityList(coreAbilities)}
+  {/if}
 
   <!-- ARMES -->
   <h2 class="text-lg font-semibold mt-6 mb-2">Armes</h2>
