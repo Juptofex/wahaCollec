@@ -12,6 +12,7 @@ import type {
   FactionCollection,
   Detachment,
   DetachmentAbility,
+  Ability,
 } from "./types";
 
 interface DatasheetModel {
@@ -35,6 +36,7 @@ class WahDB extends Dexie {
   factions!: Table<Faction>;
   detachments!: Table<Detachment>;
   detachment_abilities!: Table<DetachmentAbility>;
+  abilities!: Table<Ability>;
   datasheets!: Table<Datasheet>;
   datasheet_models!: Table<DatasheetModel>;
   datasheet_abilities!: Table<DatasheetAbility>;
@@ -56,6 +58,7 @@ class WahDB extends Dexie {
       factions: "id, name",
       detachments: "id, faction_id, name",
       detachment_abilities: "id, faction_id, detachment_id",
+      abilities: "id, name, legend, faction_id, description",
       datasheets: "id, faction_id, name",
       datasheet_models: "++localId, datasheet_id",
       datasheet_abilities: "++localId, datasheet_id",
@@ -76,6 +79,7 @@ class WahDB extends Dexie {
         factions: "id, name",
         detachments: "id, faction_id, name",
         detachment_abilities: "id, faction_id, detachment_id",
+        abilities: "id, name, legend, faction_id, description",
         datasheets: "id, faction_id, name",
         datasheet_models: "++localId, datasheet_id",
         datasheet_abilities: "++localId, datasheet_id",
@@ -122,6 +126,45 @@ class WahDB extends Dexie {
           }
         }
       });
+
+    // v6: the "abilities" seeding bug (see doSeed) misaligned the loaded
+    // JSON files with their destination tables — datasheet_abilities got
+    // the global Abilities data, and datasheet_wargear/keywords/options/
+    // models_cost each ended up with the wrong file's contents, one slot
+    // off. Force a full re-seed of the affected tables on next load.
+    this.version(6)
+      .stores({
+        factions: "id, name",
+        detachments: "id, faction_id, name",
+        detachment_abilities: "id, faction_id, detachment_id",
+        abilities: "id, name, legend, faction_id, description",
+        datasheets: "id, faction_id, name",
+        datasheet_models: "++localId, datasheet_id",
+        datasheet_abilities: "++localId, datasheet_id",
+        datasheet_wargear: "++localId, datasheet_id",
+        datasheet_keywords: "++localId, datasheet_id",
+        datasheet_options: "++localId, datasheet_id",
+        datasheet_models_cost: "++localId, datasheet_id",
+        armies: "id, name, faction_id, points_limit, created_at, updated_at",
+        army_detachments: "id, army_id, detachment_id, name, faction_id",
+        army_units:
+          "id, army_id, datasheet_id, detachment_id, quantity, points",
+        collection: "armies",
+        collection_units: "id, factionCollection_id, datasheet_id, quantity",
+        faction_collections: "id, faction_id",
+      })
+      .upgrade(async (tx) => {
+        const tablesToResync = [
+          "datasheet_abilities",
+          "datasheet_wargear",
+          "datasheet_keywords",
+          "datasheet_options",
+          "datasheet_models_cost",
+        ];
+        for (const tableName of tablesToResync) {
+          await tx.table(tableName).clear();
+        }
+      });
   }
 }
 
@@ -140,6 +183,7 @@ async function doSeed(): Promise<void> {
   const counts = await Promise.all([
     db.factions.count(),
     db.detachments.count(),
+    db.abilities.count(),
     db.datasheets.count(),
     db.datasheet_models.count(),
     db.datasheet_abilities.count(),
@@ -162,9 +206,10 @@ async function doSeed(): Promise<void> {
       factions,
       detachments,
       detachmentAbilities,
+      abilities,
       datasheets,
       models,
-      abilities,
+      datasheetAbilities,
       wargear,
       keywords,
       options,
@@ -173,6 +218,7 @@ async function doSeed(): Promise<void> {
       load("Factions"),
       load("Detachments"),
       load("Detachment_abilities"),
+      load("Abilities"),
       load("Datasheets"),
       load("Datasheets_models"),
       load("Datasheets_abilities"),
@@ -183,6 +229,7 @@ async function doSeed(): Promise<void> {
     ]);
 
     await db.factions.bulkPut(factions);
+    await db.abilities.bulkPut(abilities);
     await db.detachments.bulkPut(detachments);
     await db.detachment_abilities.bulkPut(detachmentAbilities);
     await db.datasheets.bulkPut(datasheets);
@@ -209,7 +256,7 @@ async function doSeed(): Promise<void> {
 
         await Promise.all([
           db.datasheet_models.bulkAdd(models),
-          db.datasheet_abilities.bulkAdd(abilities),
+          db.datasheet_abilities.bulkAdd(datasheetAbilities),
           db.datasheet_wargear.bulkAdd(wargear),
           db.datasheet_keywords.bulkAdd(keywords),
           db.datasheet_options.bulkAdd(options),

@@ -8,9 +8,20 @@
 
   let swappableWeaponNames = $state<Set<string>>(new Set());
   let loadoutNames = $state<Set<string>>(new Set());
+  let openAbilities = $state<Set<string>>(new Set());
 
   function stripHtml(description: string) {
     return description.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  
+  function toggleAbility(name: string) {
+    const next = new Set(openAbilities);
+    if (next.has(name)) {
+      next.delete(name);
+    } else {
+      next.add(name);
+    }
+    openAbilities = next;
   }
 
   $effect(() => {
@@ -81,21 +92,15 @@
         }
         swappableWeaponNames = names;
     });
-
-    $effect(() => {
-      console.log('keywords length:', data.keywords.length, data.keywords);
-    });
   });
 
   function isVisible(weaponName: string) {
-    if (loadoutNames.size === 0) return true; // no loadout passed → show full profile
+    if (loadoutNames.size === 0) return true;
 
     const name = weaponName.toLowerCase().trim();
 
-    // Not a swappable weapon at all → it's a fixed/base weapon, always shown
     if (!swappableWeaponNames.has(name)) return true;
 
-    // Swappable weapon → only show if it's the currently equipped choice
     return loadoutNames.has(name);
   }
 </script>
@@ -143,9 +148,21 @@
   <h2 class="text-lg font-semibold mt-6 mb-2">Capacités</h2>
   <div class="space-y-2">
     {#each data.abilities.filter(a => a.name) as a}
-      <div class="border rounded p-2">
-        <strong>{a.name}</strong>
-        <p class="text-sm text-gray-700">{@html a.description}</p>
+      <div class="border rounded">
+        <button
+          type="button"
+          class="w-full flex items-center justify-between p-2 text-left"
+          onclick={() => toggleAbility(a.name)}
+          aria-expanded={openAbilities.has(a.name)}
+        >
+          <strong>{a.name}</strong>
+          <span class="text-gray-500 transition-transform {openAbilities.has(a.name) ? 'rotate-180' : ''}">
+            ▾
+          </span>
+        </button>
+        {#if openAbilities.has(a.name)}
+          <p class="text-sm text-gray-700 px-2 pb-2">{@html a.description}</p>
+        {/if}
       </div>
     {/each}
   </div>

@@ -112,3 +112,11 @@ export type DetachmentAbility = {
   detachment: string;
   detachment_id: string;
 };
+
+export type Ability = {
+  id: string;
+  name: string;
+  legend: string;
+  faction_id: string;
+  description: string;
+};

@@ -14,5 +14,21 @@ export const load: PageLoad = async ({ params }) => {
     db.datasheet_options.where("datasheet_id").equals(params.id).toArray(),
   ]);
 
+  await Promise.all(
+    abilities
+      .filter((a) => a.type === "Core" || a.type === "Faction")
+      .map(async (ability) => {
+        const abilityDetails = await db.abilities.get(ability.ability_id);
+        if (abilityDetails) {
+          ability.name = abilityDetails.name;
+          ability.description = abilityDetails.description;
+        } else {
+          console.warn(
+            `No matching ability found for ability_id=${ability.ability_id} on datasheet ${params.id}`,
+          );
+        }
+      }),
+  );
+
   return { datasheet, models, abilities, wargear, keywords, options };
 };
