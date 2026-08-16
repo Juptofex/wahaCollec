@@ -13,7 +13,7 @@
   function stripHtml(description: string) {
     return description.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
   }
-  
+
   function toggleAbility(name: string) {
     const next = new Set(openAbilities);
     if (next.has(name)) {
@@ -155,7 +155,7 @@
           onclick={() => toggleAbility(a.name)}
           aria-expanded={openAbilities.has(a.name)}
         >
-          <strong>{a.name}</strong>
+          <strong>{a.name} {a.parameter}</strong>
           <span class="text-gray-500 transition-transform {openAbilities.has(a.name) ? 'rotate-180' : ''}">
             ▾
           </span>
