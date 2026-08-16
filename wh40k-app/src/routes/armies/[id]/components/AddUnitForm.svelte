@@ -42,7 +42,7 @@
         onchange={(e) => updateDatasheet((e.currentTarget as HTMLSelectElement).value)}
       >
         <option value="">Choose a unit</option>
-        {#each factionDatasheets as sheet}
+        {#each factionDatasheets.sort((a, b) => a.name.localeCompare(b.name)) as sheet}
           <option value={sheet.id}>{sheet.name}</option>
         {/each}
       </select>
