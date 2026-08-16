@@ -6,7 +6,7 @@
     datasheetName,
     canLead = false,
     eligibleTargets = [],
-    ledByName,
+    ledByNames = [],
     onDelete,
     onSetLeads
   }: {
@@ -14,7 +14,7 @@
     datasheetName: string;
     canLead?: boolean;
     eligibleTargets?: { id: string; label: string }[];
-    ledByName?: string;
+    ledByNames?: string[];
     onDelete: (unitId: string) => void;
     onSetLeads?: (targetUnitId: string | null) => void;
   } = $props();
@@ -35,8 +35,8 @@
     </a>
     <p class="text-xs text-gray-500">Qty: {unit.quantity} · {unit.points} pts</p>
 
-    {#if ledByName}
-      <p class="mt-1 text-xs text-emerald-700">Led by {ledByName}</p>
+    {#if ledByNames.length > 0}
+      <p class="mt-1 text-xs text-emerald-700">Led by {ledByNames.join(', ')}</p>
     {/if}
 
     {#if unit.options?.length}

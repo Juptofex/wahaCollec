@@ -6,6 +6,19 @@ import type {
   ArmyUnit,
 } from "./types";
 
+const ROLE_PRIORITY = [
+  "Character",
+  "Battleline",
+  "Dedicated Transport",
+  "Infantry",
+  "Mounted",
+  "Aircraft",
+  "Beast",
+  "Vehicle",
+  "Monster",
+  "Fortification",
+];
+
 export function parseModelCount(description: string) {
   const matches = description.match(/\d+/g);
   if (!matches) return 0;
@@ -167,3 +180,32 @@ export async function getLeaderTargetDatasheetIds(
     .toArray();
   return rows.map((r) => r.attached_id);
 }
+
+/**
+ * Some Leader footers explicitly allow attaching even when another
+ * Leader is already on the same bodyguard unit (e.g. Plague Marines
+ * being able to carry multiple Nurgle Leaders). Detected by the
+ * "even if ... already ..." pattern Games Workshop uses for this rule.
+ */
+export function allowsStackingWithExistingLeader(
+  leaderFooter: string | undefined,
+): boolean {
+  if (!leaderFooter) return false;
+  return /even if[^.]*already[^.]*attached/i.test(leaderFooter);
+}
+
+export async function getBattlefieldRole(datasheetId: string): Promise<string> {
+  const keywords = await db.datasheet_keywords
+    .where("datasheet_id")
+    .equals(datasheetId)
+    .toArray();
+
+  const keywordSet = new Set(keywords.map((k) => k.keyword.toLowerCase()));
+
+  for (const role of ROLE_PRIORITY) {
+    if (keywordSet.has(role.toLowerCase())) return role;
+  }
+  return "Other";
+}
+
+export { ROLE_PRIORITY };

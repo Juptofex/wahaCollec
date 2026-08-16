@@ -51,6 +51,7 @@ export type Datasheet = {
   id: string;
   faction_id: string;
   name: string;
+  leader_footer?: string;
 };
 
 export type DatasheetModelCost = {
