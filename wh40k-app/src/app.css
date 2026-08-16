@@ -1,1 +1,13 @@
 @import "tailwindcss";
+
+.core-ability-tag {
+  display: inline-block;
+  padding: 0 4px;
+  border-radius: 4px;
+  background-color: #eef2ff;
+  color: #000000;
+  font-weight: 600;
+  font-size: inherit;
+  cursor: help;
+  border-bottom: 1px dotted #4338ca;
+}

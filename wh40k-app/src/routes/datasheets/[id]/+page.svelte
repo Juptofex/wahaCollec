@@ -3,6 +3,7 @@
   import { db } from '$lib/db';
   import type { PageData } from './$types';
   import AddToCollection from './components/AddToCollection.svelte';
+  import { annotateCoreAbilityTags } from '$lib/coreWeaponAbilities';
 
   let { data }: { data: PageData } = $props();
 
@@ -172,7 +173,7 @@
             </span>
           </button>
           {#if openAbilities.has(a.name)}
-            <p class="text-sm text-gray-700 px-2 pb-2">{@html a.description}</p>
+            <p class="text-sm text-gray-700 px-2 pb-2">{@html annotateCoreAbilityTags(a.description)}</p>
           {/if}
         </div>
       {/each}
@@ -215,7 +216,7 @@
             <td class="p-2">
               {w.name}
               {#if w.description}
-                <div class="text-xs text-gray-500 italic">{w.description}</div>
+                <div class="text-xs text-gray-500 italic">{@html annotateCoreAbilityTags(w.description)}</div>
               {/if}
             </td>
             <td class="p-2 text-center">{w.range === 'Melee' ? 'Mêlée' : `${w.range}"`}</td>
