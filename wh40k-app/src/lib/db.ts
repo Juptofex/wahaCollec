@@ -13,6 +13,7 @@ import type {
   Detachment,
   DetachmentAbility,
   Ability,
+  DatasheetLeader,
 } from "./types";
 
 interface DatasheetModel {
@@ -44,6 +45,7 @@ class WahDB extends Dexie {
   datasheet_keywords!: Table<DatasheetKeyword>;
   datasheet_options!: Table<DatasheetOption>;
   datasheet_models_cost!: Table<DatasheetModelCost>;
+  datasheet_leaders!: Table<DatasheetLeader>;
   armies!: Table<Army>;
   army_detachments!: Table<ArmyDetachment>;
   army_units!: Table<ArmyUnit>;
@@ -165,6 +167,27 @@ class WahDB extends Dexie {
           await tx.table(tableName).clear();
         }
       });
+
+    this.version(7).stores({
+      factions: "id, name",
+      detachments: "id, faction_id, name",
+      detachment_abilities: "id, faction_id, detachment_id",
+      abilities: "id, name, legend, faction_id, description",
+      datasheets: "id, faction_id, name",
+      datasheet_models: "++localId, datasheet_id",
+      datasheet_abilities: "++localId, datasheet_id",
+      datasheet_wargear: "++localId, datasheet_id",
+      datasheet_keywords: "++localId, datasheet_id",
+      datasheet_options: "++localId, datasheet_id",
+      datasheet_models_cost: "++localId, datasheet_id",
+      datasheet_leaders: "++localId, leader_id, attached_id",
+      armies: "id, name, faction_id, points_limit, created_at, updated_at",
+      army_detachments: "id, army_id, detachment_id, name, faction_id",
+      army_units: "id, army_id, datasheet_id, detachment_id, quantity, points",
+      collection: "armies",
+      collection_units: "id, factionCollection_id, datasheet_id, quantity",
+      faction_collections: "id, faction_id",
+    });
   }
 }
 
@@ -191,6 +214,7 @@ async function doSeed(): Promise<void> {
     db.datasheet_keywords.count(),
     db.datasheet_options.count(),
     db.datasheet_models_cost.count(),
+    db.datasheet_leaders.count(),
   ]);
 
   if (counts.every((c) => c > 0)) return;
@@ -214,6 +238,7 @@ async function doSeed(): Promise<void> {
       keywords,
       options,
       models_cost,
+      leaders,
     ] = await Promise.all([
       load("Factions"),
       load("Detachments"),
@@ -226,6 +251,7 @@ async function doSeed(): Promise<void> {
       load("Datasheets_keywords"),
       load("Datasheets_options"),
       load("Datasheets_models_cost"),
+      load("Datasheets_leader"),
     ]);
 
     await db.factions.bulkPut(factions);
@@ -243,6 +269,7 @@ async function doSeed(): Promise<void> {
         db.datasheet_keywords,
         db.datasheet_options,
         db.datasheet_models_cost,
+        db.datasheet_leaders,
       ],
       async () => {
         await Promise.all([
@@ -252,6 +279,7 @@ async function doSeed(): Promise<void> {
           db.datasheet_keywords.clear(),
           db.datasheet_options.clear(),
           db.datasheet_models_cost.clear(),
+          db.datasheet_leaders.clear(),
         ]);
 
         await Promise.all([
@@ -261,6 +289,7 @@ async function doSeed(): Promise<void> {
           db.datasheet_keywords.bulkAdd(keywords),
           db.datasheet_options.bulkAdd(options),
           db.datasheet_models_cost.bulkAdd(models_cost),
+          db.datasheet_leaders.bulkAdd(leaders),
         ]);
       },
     );

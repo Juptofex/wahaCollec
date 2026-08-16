@@ -1,4 +1,10 @@
-import type { DatasheetOption, DatasheetModelCost, OptionGroup } from "./types";
+import { db } from "./db";
+import type {
+  DatasheetOption,
+  DatasheetModelCost,
+  OptionGroup,
+  ArmyUnit,
+} from "./types";
 
 export function parseModelCount(description: string) {
   const matches = description.match(/\d+/g);
@@ -146,4 +152,18 @@ export function getUnitCost(
 
   const exactMatch = options.find((item) => item.quantity === quantity);
   return exactMatch?.cost ?? null;
+}
+
+/**
+ * Datasheet ids this leader can attach to, from the datasheet_leaders
+ * table (Wahapedia's Datasheets_leader.csv).
+ */
+export async function getLeaderTargetDatasheetIds(
+  datasheetId: string,
+): Promise<string[]> {
+  const rows = await db.datasheet_leaders
+    .where("leader_id")
+    .equals(datasheetId)
+    .toArray();
+  return rows.map((r) => r.attached_id);
 }

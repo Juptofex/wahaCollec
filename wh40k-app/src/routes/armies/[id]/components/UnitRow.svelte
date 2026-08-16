@@ -4,12 +4,25 @@
   let {
     unit,
     datasheetName,
-    onDelete
+    canLead = false,
+    eligibleTargets = [],
+    ledByName,
+    onDelete,
+    onSetLeads
   }: {
     unit: ArmyUnit;
     datasheetName: string;
+    canLead?: boolean;
+    eligibleTargets?: { id: string; label: string }[];
+    ledByName?: string;
     onDelete: (unitId: string) => void;
+    onSetLeads?: (targetUnitId: string | null) => void;
   } = $props();
+
+  function handleLeadsChange(e: Event) {
+    const value = (e.target as HTMLSelectElement).value;
+    onSetLeads?.(value === '' ? null : value);
+  }
 </script>
 
 <article class="rounded-xl border bg-slate-50 p-3 flex items-start justify-between gap-3">
@@ -21,6 +34,10 @@
       {datasheetName}
     </a>
     <p class="text-xs text-gray-500">Qty: {unit.quantity} · {unit.points} pts</p>
+
+    {#if ledByName}
+      <p class="mt-1 text-xs text-emerald-700">Led by {ledByName}</p>
+    {/if}
 
     {#if unit.options?.length}
       <div class="mt-2 flex flex-wrap gap-1.5">
@@ -35,6 +52,25 @@
           </span>
         {/each}
       </div>
+    {/if}
+
+    {#if canLead}
+      <label class="mt-2 block text-xs">
+        <span class="text-gray-500">Leads:</span>
+        <select
+          class="ml-1 rounded border px-1.5 py-0.5 text-xs"
+          value={unit.leads_unit_id ?? ''}
+          onchange={handleLeadsChange}
+        >
+          <option value="">— none —</option>
+          {#each eligibleTargets as target}
+            <option value={target.id}>{target.label}</option>
+          {/each}
+        </select>
+        {#if eligibleTargets.length === 0}
+          <span class="ml-1 text-gray-400">(no eligible units in this detachment yet)</span>
+        {/if}
+      </label>
     {/if}
   </div>
 

@@ -44,6 +44,7 @@ export type ArmyUnit = {
   quantity: number;
   points: number;
   options?: UnitOptionSelection[];
+  leads_unit_id?: string;
 };
 
 export type Datasheet = {
@@ -119,4 +120,9 @@ export type Ability = {
   legend: string;
   faction_id: string;
   description: string;
+};
+
+export type DatasheetLeader = {
+  leader_id: string;
+  attached_id: string;
 };

@@ -43,3 +43,7 @@ export async function removeDetachment(detachmentId: string) {
   await db.army_units.bulkDelete(units.map((u) => u.id));
   await db.army_detachments.delete(detachmentId);
 }
+
+export async function updateUnit(unit: ArmyUnit) {
+  await db.army_units.put(unit);
+}
