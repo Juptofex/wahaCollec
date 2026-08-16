@@ -1,6 +1,13 @@
 <script lang="ts">
+  import type { Datasheet } from '$lib/types';
   import type { PageData } from './$types';
   let { data }: { data: PageData } = $props();
+  let searchQuery : string | null = $state(null);
+  let filteredDatasheets : Datasheet[] = $derived.by(() => {
+    if (!searchQuery) return data.datasheets;
+    const query = searchQuery.toLowerCase();
+    return data.datasheets.filter((sheet) => sheet.name.toLowerCase().includes(query));
+  });
 </script>
 
 <div class="p-4 space-y-6">
@@ -40,10 +47,18 @@
 
   <hr class="border-slate-200" />
 
+  <div>
+    <input
+      bind:value={searchQuery}
+      placeholder="Rechercher une datasheet..."
+      class="w-full rounded-lg border p-2"
+    />
+  </div>
+
   <section class="rounded-2xl border bg-white p-4 shadow-sm space-y-3">
     <h2 class="text-lg font-semibold">Datasheets</h2>
     <div class="grid gap-2">
-      {#each data.datasheets as sheet}
+      {#each filteredDatasheets as sheet}
         <a class="rounded-xl border p-3 hover:bg-slate-50" href={`/datasheets/${sheet.id}`}>
           {sheet.name}
         </a>

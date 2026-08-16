@@ -54,5 +54,5 @@
 <ToastStack />
 
 <footer class="text-xs text-gray-400 text-center p-2">
-	Build: v0.3.3
+	Build: v0.3.4
 </footer>
