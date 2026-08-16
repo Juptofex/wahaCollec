@@ -10,7 +10,7 @@
   </header>
 
   <section class="rounded-2xl border bg-white p-4 shadow-sm space-y-3">
-    <details class="group" open>
+    <details class="group">
       <summary class="flex cursor-pointer items-center justify-between select-none marker:content-none">
         <h2 class="text-lg font-semibold">Detachments</h2>
         <svg

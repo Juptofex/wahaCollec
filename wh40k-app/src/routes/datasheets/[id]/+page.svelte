@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import { db } from '$lib/db';
   import type { PageData } from './$types';
@@ -81,6 +80,10 @@
           }
         }
         swappableWeaponNames = names;
+    });
+
+    $effect(() => {
+      console.log('keywords length:', data.keywords.length, data.keywords);
     });
   });
 
