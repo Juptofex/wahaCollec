@@ -1,5 +1,3 @@
-// $lib/coreWeaponAbilities.ts
-
 export const CORE_WEAPON_ABILITIES: Record<string, string> = {
   ANTI: "Scores a Critical Wound against the specified keyword on an unmodified Wound roll at or above the stated value.",
   ASSAULT:
@@ -74,8 +72,8 @@ export function annotateCoreAbilityTags(html: string): string {
     (full, tag) => {
       const desc = getCoreAbilityDescription(tag.trim());
       if (!desc) return full;
-      const escapedDesc = desc.replace(/"/g, "&quot;");
-      return `<span class="core-ability-tag" title="${escapedDesc}">${tag}</span>`;
+      const escapedDesc = desc.replace(/"/g, "&quot;").replace(/</g, "&lt;");
+      return `<span class="core-ability-tag" data-open="false">${tag}<span class="core-ability-popover">${escapedDesc}</span></span>`;
     },
   );
 }

@@ -5,9 +5,36 @@
   padding: 0 4px;
   border-radius: 4px;
   background-color: #eef2ff;
-  color: #000000;
+  color: #050505;
   font-weight: 600;
   font-size: inherit;
-  cursor: help;
+  cursor: pointer;
   border-bottom: 1px dotted #4338ca;
+  border: none;
+  position: relative;
+}
+
+.core-ability-popover {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  margin-top: 4px;
+  z-index: 20;
+  width: max-content;
+  max-width: 220px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background-color: #1f2937;
+  color: white;
+  font-weight: normal;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.core-ability-tag .core-ability-popover {
+  display: none;
+}
+.core-ability-tag[data-open="true"] .core-ability-popover {
+  display: block;
 }

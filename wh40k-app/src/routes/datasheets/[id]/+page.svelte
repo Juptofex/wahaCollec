@@ -7,6 +7,7 @@
 
   let { data }: { data: PageData } = $props();
 
+  let openTag = $state<string | null>(null);
   let swappableWeaponNames = $state<Set<string>>(new Set());
   let loadoutNames = $state<Set<string>>(new Set());
   let openAbilities = $state<Set<string>>(new Set());
@@ -19,6 +20,18 @@
   let datasheetAbilities = $derived.by(() =>
     data.abilities.filter((a) => a.name && a.type !== "Core" && a.type !== "Faction")
   );
+
+  function toggleTag(tag: string) {
+    openTag = openTag === tag ? null : tag;
+  }
+
+  function handleAbilityTagClick(e: MouseEvent) {
+    const target = (e.target as HTMLElement).closest('.core-ability-tag') as HTMLElement | null;
+    if (!target) return;
+    const isOpen = target.getAttribute('data-open') === 'true';
+    document.querySelectorAll('.core-ability-tag[data-open="true"]').forEach((el) => el.setAttribute('data-open', 'false'));
+    target.setAttribute('data-open', isOpen ? 'false' : 'true');
+  }
 
   function stripHtml(description: string) {
     return description.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -157,43 +170,47 @@
   <!-- CAPACITÉS -->
   <h2 class="text-lg font-semibold mt-6 mb-2">Capacités</h2>
 
-  {#snippet abilityList(list: typeof data.abilities)}
-    <div class="space-y-2">
-      {#each list as a}
-        <div class="border rounded">
-          <button
-            type="button"
-            class="w-full flex items-center justify-between p-2 text-left"
-            onclick={() => toggleAbility(a.name)}
-            aria-expanded={openAbilities.has(a.name)}
-          >
-            <strong>{a.name} {a.parameter}</strong>
-            <span class="text-gray-500 transition-transform {openAbilities.has(a.name) ? 'rotate-180' : ''}">
-              ▾
-            </span>
-          </button>
-          {#if openAbilities.has(a.name)}
-            <p class="text-sm text-gray-700 px-2 pb-2">{@html annotateCoreAbilityTags(a.description)}</p>
-          {/if}
-        </div>
-      {/each}
-    </div>
-  {/snippet}
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div onclick={handleAbilityTagClick}>
+    {#snippet abilityList(list: typeof data.abilities)}
+      <div class="space-y-2">
+        {#each list as a}
+          <div class="border rounded">
+            <button
+              type="button"
+              class="w-full flex items-center justify-between p-2 text-left"
+              onclick={() => toggleAbility(a.name)}
+              aria-expanded={openAbilities.has(a.name)}
+            >
+              <strong>{a.name} {a.parameter}</strong>
+              <span class="text-gray-500 transition-transform {openAbilities.has(a.name) ? 'rotate-180' : ''}">
+                ▾
+              </span>
+            </button>
+            {#if openAbilities.has(a.name)}
+              <p class="text-sm text-gray-700 px-2 pb-2">{@html annotateCoreAbilityTags(a.description)}</p>
+            {/if}
+          </div>
+        {/each}
+      </div>
+    {/snippet}
 
-  {#if datasheetAbilities.length > 0}
-    <h3 class="text-sm font-semibold text-gray-600 mt-4 mb-1">Capacités de la fiche</h3>
-    {@render abilityList(datasheetAbilities)}
-  {/if}
+    {#if datasheetAbilities.length > 0}
+      <h3 class="text-sm font-semibold text-gray-600 mt-4 mb-1">Capacités de la fiche</h3>
+      {@render abilityList(datasheetAbilities)}
+    {/if}
 
-  {#if factionAbilities.length > 0}
-    <h3 class="text-sm font-semibold text-gray-600 mt-4 mb-1">Capacités de faction</h3>
-    {@render abilityList(factionAbilities)}
-  {/if}
+    {#if factionAbilities.length > 0}
+      <h3 class="text-sm font-semibold text-gray-600 mt-4 mb-1">Capacités de faction</h3>
+      {@render abilityList(factionAbilities)}
+    {/if}
 
-  {#if coreAbilities.length > 0}
-    <h3 class="text-sm font-semibold text-gray-600 mt-4 mb-1">Capacités générales</h3>
-    {@render abilityList(coreAbilities)}
-  {/if}
+    {#if coreAbilities.length > 0}
+      <h3 class="text-sm font-semibold text-gray-600 mt-4 mb-1">Capacités générales</h3>
+      {@render abilityList(coreAbilities)}
+    {/if}
+  </div>
 
   <!-- ARMES -->
   <h2 class="text-lg font-semibold mt-6 mb-2">Armes</h2>
@@ -217,9 +234,21 @@
               {w.name}
               {#if w.description}
                 <div class="text-xs text-gray-500 italic flex flex-wrap gap-1 mt-0.5">
-                  {#each parseWargearAbilities(w.description) as clause}
+                  {#each parseWargearAbilities(w.description) as clause, i}
+                    {@const tagId = `${w.name}-${i}`}
                     {#if clause.description}
-                      <span class="core-ability-tag" title={clause.description}>{clause.raw}</span>
+                      <span class="relative inline-block">
+                        <button
+                          type="button"
+                          class="core-ability-tag cursor-pointer"
+                          onclick={() => toggleTag(tagId)}
+                        >
+                          {clause.raw}
+                        </button>
+                        {#if openTag === tagId}
+                          <span class="core-ability-popover">{clause.description}</span>
+                        {/if}
+                      </span>
                     {:else}
                       <span>{clause.raw}</span>
                     {/if}
