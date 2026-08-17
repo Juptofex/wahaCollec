@@ -40,7 +40,8 @@ export const CORE_WEAPON_ABILITIES: Record<string, string> = {
 
 /**
  * Pulls bracketed ability tags like "[SUSTAINED HITS 1]" or
- * "[DEVASTATING WOUNDS]" out of raw HTML ability/wargear description text.
+ * "[DEVASTATING WOUNDS]" out of raw HTML ability description text.
+ * Used for datasheet_abilities.description, which embeds tags in prose.
  */
 export function extractCoreAbilityTags(description: string): string[] {
   const matches = Array.from(
@@ -65,6 +66,7 @@ export function getCoreAbilityDescription(tag: string): string | null {
 /**
  * Wraps every [TAG] occurrence in the given HTML with a styled, titled
  * span so it renders as a hoverable badge instead of plain bracket text.
+ * Used for datasheet_abilities.description.
  */
 export function annotateCoreAbilityTags(html: string): string {
   return html.replace(
@@ -76,4 +78,36 @@ export function annotateCoreAbilityTags(html: string): string {
       return `<span class="core-ability-tag" title="${escapedDesc}">${tag}</span>`;
     },
   );
+}
+
+/**
+ * Parses a weapon's plain-text ability list from datasheet_wargear.description
+ * (e.g. "anti-infantry 4+, devastating wounds, rapid fire 1") into
+ * individual clauses, each matched against the Core ability glossary.
+ * Unlike ability descriptions, this field has no brackets and no prose —
+ * just a flat, comma-separated, lowercase list.
+ */
+export function parseWargearAbilities(
+  description: string,
+): { raw: string; description: string | null }[] {
+  return description
+    .split(",")
+    .map((clause) => clause.trim())
+    .filter(Boolean)
+    .map((clause) => {
+      // Separate a trailing value ("4+", "1", "d3") from the ability name.
+      const match = clause.match(/^(.*?)(?:\s+([\dX]+\+?|d\d+))?$/i);
+      const name = (match?.[1] ?? clause).trim();
+      const key = normalizeAbilityKey(name);
+      return {
+        raw: clause,
+        description: CORE_WEAPON_ABILITIES[key] ?? null,
+      };
+    });
+}
+
+function normalizeAbilityKey(rawName: string): string {
+  const upper = rawName.trim().toUpperCase();
+  if (upper.startsWith("ANTI-") || upper.startsWith("ANTI ")) return "ANTI";
+  return upper;
 }

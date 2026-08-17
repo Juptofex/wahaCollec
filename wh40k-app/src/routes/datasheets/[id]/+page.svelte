@@ -3,7 +3,7 @@
   import { db } from '$lib/db';
   import type { PageData } from './$types';
   import AddToCollection from './components/AddToCollection.svelte';
-  import { annotateCoreAbilityTags } from '$lib/coreWeaponAbilities';
+  import { annotateCoreAbilityTags, parseWargearAbilities } from '$lib/coreWeaponAbilities';
 
   let { data }: { data: PageData } = $props();
 
@@ -216,7 +216,15 @@
             <td class="p-2">
               {w.name}
               {#if w.description}
-                <div class="text-xs text-gray-500 italic">{@html annotateCoreAbilityTags(w.description)}</div>
+                <div class="text-xs text-gray-500 italic flex flex-wrap gap-1 mt-0.5">
+                  {#each parseWargearAbilities(w.description) as clause}
+                    {#if clause.description}
+                      <span class="core-ability-tag" title={clause.description}>{clause.raw}</span>
+                    {:else}
+                      <span>{clause.raw}</span>
+                    {/if}
+                  {/each}
+                </div>
               {/if}
             </td>
             <td class="p-2 text-center">{w.range === 'Melee' ? 'Mêlée' : `${w.range}"`}</td>
