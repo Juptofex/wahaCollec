@@ -93,6 +93,7 @@ export type CollectionUnit = {
   factionCollection_id: string;
   datasheet_id: string;
   quantity: number;
+  is_painted: boolean;
 };
 
 export type Detachment = {

@@ -185,7 +185,8 @@ class WahDB extends Dexie {
       army_detachments: "id, army_id, detachment_id, name, faction_id",
       army_units: "id, army_id, datasheet_id, detachment_id, quantity, points",
       collection: "armies",
-      collection_units: "id, factionCollection_id, datasheet_id, quantity",
+      collection_units:
+        "id, factionCollection_id, datasheet_id, quantity, is_painted",
       faction_collections: "id, faction_id",
     });
   }

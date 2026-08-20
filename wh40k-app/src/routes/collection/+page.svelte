@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { db } from '$lib/db';
-  import type { FactionCollection, CollectionUnit, Faction, Datasheet } from '$lib/types';
+  import type { FactionCollection, CollectionUnit } from '$lib/types';
 
   type UnitRow = CollectionUnit & { datasheetName: string };
   type FactionGroup = {
@@ -66,6 +66,11 @@
     await loadCollection();
   }
 
+  async function statusPaintedChange(unit: UnitRow) {
+    await db.collection_units.update(unit.id, {is_painted: !unit.is_painted})
+    await loadCollection();
+  }
+
   onMount(loadCollection);
 </script>
 
@@ -79,8 +84,12 @@
   {:else}
     <div class="space-y-6">
       {#each groups as group}
-        <div>
-          <h2 class="text-lg font-semibold mb-2">{group.factionName}</h2>
+      <section class="rounded-2xl border bg-white p-4 shadow-sm space-y-3">
+        <details class="group">
+          <summary class="flex cursor-pointer items-center justify-between select-none marker:content-none">
+            <h2 class="text-lg font-semibold mb-2">{group.factionName}</h2>
+          </summary>
+          
           <div class="space-y-2">
             {#each group.units as unit}
               <div class="flex items-center justify-between border rounded p-2">
@@ -88,7 +97,12 @@
                   class="font-medium"
                   href={`/datasheets/${unit.datasheet_id}`}
                 >
-                  <p class="text-lg font-semibold">{unit.datasheetName}</p>
+                  <div class="flex items-center gap-2">
+                    <p class="text-lg font-semibold">{unit.datasheetName}</p>
+                    {#if unit.is_painted}
+                      <p class="text-green-600 text-sm font-semibold">P</p>
+                    {/if}
+                  </div>
                 </a>
                 <div class="flex items-center gap-2">
                   <button
@@ -113,11 +127,29 @@
                   >
                     Remove
                   </button>
+                  {#if !unit.is_painted}
+                    <button
+                      type="button"
+                      class="rounded bg-green-100 text-green-700 px-2 py-1 text-sm cursor-pointer hover:bg-green-200"
+                      onclick={() => statusPaintedChange(unit)}
+                    >
+                      Painted ?
+                    </button>
+                  {:else}
+                    <button
+                        type="button"
+                        class="rounded bg-red-100 text-red-700 px-2 py-1 text-sm cursor-pointer hover:bg-red-200"
+                        onclick={() => statusPaintedChange(unit)}
+                      >
+                        Not Painted
+                    </button>
+                  {/if}
                 </div>
               </div>
             {/each}
           </div>
-        </div>
+          </details>
+        </section>
       {/each}
     </div>
   {/if}
