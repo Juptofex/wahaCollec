@@ -32,6 +32,13 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
+.core-ability-popover--fixed {
+  position: fixed;
+  margin-top: 0;
+  left: var(--popover-left);
+  top: var(--popover-top);
+}
+
 .core-ability-tag .core-ability-popover {
   display: none;
 }

@@ -8,6 +8,7 @@
   let { data }: { data: PageData } = $props();
 
   let openTag = $state<string | null>(null);
+  let popoverPos = $state<{ top: number; left: number }>({ top: 0, left: 0 });
   let swappableWeaponNames = $state<Set<string>>(new Set());
   let loadoutNames = $state<Set<string>>(new Set());
   let openAbilities = $state<Set<string>>(new Set());
@@ -21,8 +22,14 @@
     data.abilities.filter((a) => a.name && a.type !== "Core" && a.type !== "Faction")
   );
 
-  function toggleTag(tag: string) {
-    openTag = openTag === tag ? null : tag;
+  function toggleTag(e: MouseEvent, tagId: string) {
+    if (openTag === tagId) {
+      openTag = null;
+      return;
+    }
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    popoverPos = { top: rect.bottom + 4, left: rect.left };
+    openTag = tagId;
   }
 
   function handleAbilityTagClick(e: MouseEvent) {
@@ -241,12 +248,17 @@
                         <button
                           type="button"
                           class="core-ability-tag cursor-pointer"
-                          onclick={() => toggleTag(tagId)}
+                          onclick={(e) => toggleTag(e, tagId)}
                         >
                           {clause.raw}
                         </button>
                         {#if openTag === tagId}
-                          <span class="core-ability-popover">{clause.description}</span>
+                          <span
+                            class="core-ability-popover core-ability-popover--fixed"
+                            style="--popover-top: {popoverPos.top}px; --popover-left: {popoverPos.left}px;"
+                          >
+                            {clause.description}
+                          </span>
                         {/if}
                       </span>
                     {:else}
