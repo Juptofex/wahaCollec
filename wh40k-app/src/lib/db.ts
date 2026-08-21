@@ -189,6 +189,45 @@ class WahDB extends Dexie {
         "id, factionCollection_id, datasheet_id, quantity, is_painted",
       faction_collections: "id, faction_id",
     });
+
+    // v8: add painted_models (per-model painted state) to collection_units,
+    // replacing the old single is_painted flag. Backfill existing rows.
+    this.version(8)
+      .stores({
+        factions: "id, name",
+        detachments: "id, faction_id, name",
+        detachment_abilities: "id, faction_id, detachment_id",
+        abilities: "id, name, legend, faction_id, description",
+        datasheets: "id, faction_id, name",
+        datasheet_models: "++localId, datasheet_id",
+        datasheet_abilities: "++localId, datasheet_id",
+        datasheet_wargear: "++localId, datasheet_id",
+        datasheet_keywords: "++localId, datasheet_id",
+        datasheet_options: "++localId, datasheet_id",
+        datasheet_models_cost: "++localId, datasheet_id",
+        datasheet_leaders: "++localId, leader_id, attached_id",
+        armies: "id, name, faction_id, points_limit, created_at, updated_at",
+        army_detachments: "id, army_id, detachment_id, name, faction_id",
+        army_units:
+          "id, army_id, datasheet_id, detachment_id, quantity, points",
+        collection: "armies",
+        collection_units:
+          "id, factionCollection_id, datasheet_id, quantity, painted_models",
+        faction_collections: "id, faction_id",
+      })
+      .upgrade(async (tx) => {
+        const table = tx.table("collection_units");
+        const rows = await table.toArray();
+
+        for (const row of rows) {
+          if (Array.isArray(row.painted_models)) continue; // already migrated
+
+          const wasPainted = row.is_painted === true;
+          const painted_models = Array(row.quantity ?? 0).fill(wasPainted);
+
+          await table.update(row.id, { painted_models });
+        }
+      });
   }
 }
 
